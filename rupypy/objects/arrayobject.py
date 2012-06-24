@@ -2,6 +2,7 @@ from rupypy.module import ClassDef
 from rupypy.modules.enumerable import Enumerable
 from rupypy.objects.objectobject import W_Object
 from rupypy.objects.rangeobject import W_RangeObject
+from rupypy.objects.intobject import W_FixnumObject
 
 
 class W_ArrayObject(W_Object):
@@ -16,7 +17,7 @@ class W_ArrayObject(W_Object):
         return self.items_w
 
     classdef.app_method("""
-    def to_s()
+    def to_s
         result = "["
         i = 0
         self.each_with_index do |obj, i|
@@ -37,8 +38,6 @@ class W_ArrayObject(W_Object):
                 end = space.int_w(w_idx.w_end)
             else:
                 end = space.int_w(w_idx.w_end) + 1
-            assert start >= 0
-            assert end >= 0
             return space.newarray(self.items_w[start:end])
         else:
             return self.items_w[space.int_w(w_idx)]
@@ -51,10 +50,9 @@ class W_ArrayObject(W_Object):
                 end = space.int_w(w_idx.w_end)
             else:
                 end = space.int_w(w_idx.w_end) + 1
-            assert start >= 0
-            assert end >= 0
             self.items_w[start:end] = [w_obj]
         else:
+            assert isinstance(w_idx, W_FixnumObject)
             self.items_w[space.int_w(w_idx)] = w_obj
 
     @classdef.method("size")
