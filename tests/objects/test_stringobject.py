@@ -67,13 +67,13 @@ class TestStringObject(BaseRuPyPyTest):
 
     def test_edge_indices(self, space):
         w_res = space.execute("return 'hello'[5]")
-        assert self.unwrap(space, w_res) == None
+        assert self.unwrap(space, w_res) is None
 
         w_res = space.execute("return 'hello'[-2]")
         assert self.unwrap(space, w_res) == "l"
 
         w_res = space.execute("return 'hello'[-6]")
-        assert self.unwrap(space, w_res) == None
+        assert self.unwrap(space, w_res) is None
 
         w_res = space.execute("return 'hello'[-2..0]")
         assert self.unwrap(space, w_res) == ""
@@ -94,7 +94,7 @@ class TestStringObject(BaseRuPyPyTest):
         assert space.str_w(w_res) == ""
 
         w_res = space.execute("return 'hello'[8..10]")
-        assert self.unwrap(space, w_res) == None
+        assert self.unwrap(space, w_res) is None
 
         w_res = space.execute("return 'hello'[3..-2]")
         assert self.unwrap(space, w_res) == "l"
