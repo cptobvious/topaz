@@ -62,3 +62,46 @@ class TestArrayObject(BaseRuPyPyTest):
     def test_negative_indices(self, space):
         w_res = space.execute("return [1, 2, 3][-2..2]")
         assert self.unwrap(space, w_res) == [2, 3]
+        
+        w_res = space.execute("return [1, 2, 3][-3]")
+        assert self.unwrap(space, w_res) == 1
+        
+        w_res = space.execute("return [1, 2, 3][-4]")
+        assert self.unwrap(space, w_res) is None
+
+    def test_edge_indices(self, space):
+        w_res = space.execute("return [1, 2, 3, 4, 5][5]")
+        assert self.unwrap(space, w_res) is None
+
+        w_res = space.execute("return [1, 2, 3, 4, 5][-2]")
+        assert self.unwrap(space, w_res) == 4
+
+        w_res = space.execute("return [1, 2, 3, 4, 5][-6]")
+        assert self.unwrap(space, w_res) is None
+
+        w_res = space.execute("return [1, 2, 3, 4, 5][-2..0]")
+        assert self.unwrap(space, w_res) == []
+
+        w_res = space.execute("return [1, 2, 3, 4, 5][5..5]")
+        assert self.unwrap(space, w_res) == []
+
+        w_res = space.execute("return [1, 2, 3, 4, 5][5..8]")
+        assert self.unwrap(space, w_res) == []
+
+        w_res = space.execute("return [1, 2, 3, 4, 5][-3..-2]")
+        assert self.unwrap(space, w_res) == [3, 4]
+
+        w_res = space.execute("return [1, 2, 3, 4, 5][-2..-1]")
+        assert self.unwrap(space, w_res) == [4, 5]
+
+        w_res = space.execute("return [1, 2, 3, 4, 5][4..2]")
+        assert self.unwrap(space, w_res) == []
+
+        w_res = space.execute("return [1, 2, 3, 4, 5][8..10]")
+        assert self.unwrap(space, w_res) is None
+
+        w_res = space.execute("return [1, 2, 3, 4, 5][3..-2]")
+        assert self.unwrap(space, w_res) == [4]
+
+        w_res = space.execute("return [1, 2, 3, 4, 5][-2...1]")
+        assert self.unwrap(space, w_res) == []

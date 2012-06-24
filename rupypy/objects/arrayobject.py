@@ -32,28 +32,59 @@ class W_ArrayObject(W_Object):
 
     @classdef.method("[]")
     def method_subscript(self, space, w_idx):
+        length = len(self.items_w)
         if isinstance(w_idx, W_RangeObject):
             start = space.int_w(w_idx.w_start)
+
+            if start > length or start < -length:
+                return space.w_nil
+
             if w_idx.exclusive:
                 end = space.int_w(w_idx.w_end)
             else:
                 end = space.int_w(w_idx.w_end) + 1
+
+            if start < 0:
+                start = length + start
+            if end <= 0:
+                end = length + end
+
             return space.newarray(self.items_w[start:end])
         else:
-            return self.items_w[space.int_w(w_idx)]
+            assert isinstance(w_idx, W_FixnumObject)
+            index = space.int_w(w_idx)
+            if index >= length or index < -length:
+                return space.w_nil
+            return self.items_w[index]
 
     @classdef.method("[]=")
     def method_subscript_assign(self, space, w_idx, w_obj):
+        length = len(self.items_w)
         if isinstance(w_idx, W_RangeObject):
             start = space.int_w(w_idx.w_start)
+
+            if start > length or start < -length:
+                return space.w_nil
+
             if w_idx.exclusive:
                 end = space.int_w(w_idx.w_end)
             else:
                 end = space.int_w(w_idx.w_end) + 1
+
+            if start < 0:
+                start = length + start
+            if end <= 0:
+                end = length + end
+
+            # TODO
             self.items_w[start:end] = [w_obj]
         else:
             assert isinstance(w_idx, W_FixnumObject)
-            self.items_w[space.int_w(w_idx)] = w_obj
+            index = space.int_w(w_idx)
+            if index >= length or index < -length:
+                # TODO
+                return space.w_nil
+            self.items_w[index] = w_obj
 
     @classdef.method("size")
     @classdef.method("length")
