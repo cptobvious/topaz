@@ -175,22 +175,22 @@ class W_StringObject(W_Object):
         length = self.length()
         if isinstance(w_idx, W_RangeObject):
             start = space.int_w(w_idx.w_start)
-            
+
             if start > length or start < -length:
                 return space.w_nil
-            
+
             if w_idx.exclusive:
                 end = space.int_w(w_idx.w_end)
             else:
                 end = space.int_w(w_idx.w_end) + 1
-            
+
             if start < 0:
                 if end > 0:
                     return space.newstr_fromstr("")
                 start = length + start
             if end <= 0:
                 end = length + end
-            
+
             return space.newstr_fromstr(space.str_w(self)[start:end])
         else:
             assert isinstance(w_idx, W_FixnumObject)
@@ -198,6 +198,11 @@ class W_StringObject(W_Object):
             if index >= length or index < -length:
                 return space.w_nil
             return space.newstr_fromstr(space.str_w(self)[index])
+
+    @classdef.method("[]=")
+    def method_subscript_assign(self, space, w_idx, w_other):
+        assert isinstance(w_other, W_StringObject)
+        # convert to array, use assignment methods and join?
 
     @classdef.method("next")
     @classdef.method("succ")
