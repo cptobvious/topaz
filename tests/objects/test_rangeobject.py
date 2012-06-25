@@ -53,6 +53,9 @@ class TestRangeObject(BaseRuPyPyTest):
 
         w_res = space.execute("return (1...2) == (1...2)")
         assert self.unwrap(space, w_res) is True
+        
+        w_res = space.execute("return (1..2) == 4")
+        assert self.unwrap(space, w_res) is False
 
         #w_res = space.execute("return (1..2) == Range.new(1, 2)")
         #assert self.unwrap(space, w_res) is True

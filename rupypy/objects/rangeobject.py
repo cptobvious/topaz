@@ -30,30 +30,30 @@ class W_RangeObject(W_Object):
     #    else:
     #        return W_RangeObject(space, args_w[0], args_w[1], space.bool_w(args_w[2]))
 
-    # TODO: Pure Ruby!
-    @classdef.method("==")
-    def method_eql(self, space, w_other):
-        if isinstance(w_other, W_RangeObject):
-            if space.int_w(self.w_start) == space.int_w(w_other.w_start):
-                if space.int_w(self.w_end) == space.int_w(w_other.w_end):
-                    if self.exclusive == w_other.exclusive:
-                        return space.newbool(True)
-        return space.newbool(False)
+    @classdef.method("begin")
+    def method_begin(self, space):
+        return self.w_start
 
-    #classdef.app_method("""
-    #def ==(other)
-    #    if other.instance_of? Range
-    #        if self.begin == other.begin && self.end == other.end && 
-    #            if self.exclude_end? == other.exclude_end?
-    #                return true
-    #            end
-    #        end
-    #    end
-    #    false
-    #end
-    #""")
+    @classdef.method("end")
+    def method_end(self, space):
+        return self.w_end
+
+    @classdef.method("exclude_end?")
+    def method_exclude_end(self, space):
+        return space.newbool(self.exclusive)
 
     classdef.app_method("""
+    def ==(other)
+        if other.instance_of? Range
+            if self.begin == other.begin && self.end == other.end && 
+                if self.exclude_end? == other.exclude_end?
+                    return true
+                end
+            end
+        end
+        false
+    end
+
     def ===(other)
         include? other
     end
@@ -71,13 +71,7 @@ class W_RangeObject(W_Object):
         end
         false
     end
-    """)
 
-    @classdef.method("begin")
-    def method_begin(self, space):
-        return self.w_start
-
-    classdef.app_method("""
     def cover?(other)
         if self.begin <= other
             if self.exclude_end?
@@ -92,17 +86,7 @@ class W_RangeObject(W_Object):
         end
         false
     end
-    """)
-
-    @classdef.method("end")
-    def method_end(self, space):
-        return self.w_end
-
-    @classdef.method("exclude_end?")
-    def method_exclude_end(self, space):
-        return space.newbool(self.exclusive)
-
-    classdef.app_method("""
+    
     def each
         i = self.begin
         lim = self.end
