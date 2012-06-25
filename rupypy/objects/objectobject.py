@@ -87,6 +87,21 @@ class W_RootObject(W_BaseObject):
             space.int_w(space.send(self, space.newsymbol("__id__")))
         ))
 
+    @classdef.method("is_a?")
+    def method_is_a(self, space, w_other):
+        klass = self.getclass(space)
+        while klass is not w_other:
+            if w_other in klass.classdef.includes:
+                return space.newbool(True)
+            klass = klass.superclass
+            if klass == None:
+                return space.newbool(False)
+        return space.newbool(True)
+
+    @classdef.method("instance_of?")
+    def method_instance_of(self, space, w_other):
+        return space.newbool(self.getclass(space) is w_other)
+
 
 class W_Object(W_RootObject):
     def __init__(self, space, klass=None):

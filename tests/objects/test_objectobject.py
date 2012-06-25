@@ -73,6 +73,18 @@ class TestObjectObject(BaseRuPyPyTest):
     def test_is_a_module(self, space):
         w_res = space.execute("return [].is_a? Enumerable")
         assert self.unwrap(space, w_res) is True
+        
+        w_res = space.execute("return 4.is_a? Object")
+        assert self.unwrap(space, w_res) is True
+        
+        w_res = space.execute("return 4.is_a? String")
+        assert self.unwrap(space, w_res) is False
+        
+        w_res = space.execute("return [].is_a? Array")
+        assert self.unwrap(space, w_res) is True
+        
+        w_res = space.execute("return [].is_a? Enumerable")
+        assert self.unwrap(space, w_res) is True
 
     def test_instance_of(self, space):
         w_res = space.execute("return 4.instance_of? Fixnum")
@@ -89,6 +101,18 @@ class TestObjectObject(BaseRuPyPyTest):
 
     def test_instance_of_module(self, space):
         w_res = space.execute("return [].instance_of? Enumerable")
+        assert self.unwrap(space, w_res) is False
+
+        w_res = space.execute("return 4.instance_of? Object")
+        assert self.unwrap(space, w_res) is False
+
+        w_res = space.execute("return 4.instance_of? String")
+        assert self.unwrap(space, w_res) is False
+
+        w_res = space.execute("return [].instance_of? Array")
+        assert self.unwrap(space, w_res) is True
+
+        w_res = space.execute("return [].is_a? Enumerable")
         assert self.unwrap(space, w_res) is False
 
 
