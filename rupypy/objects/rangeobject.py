@@ -77,6 +77,23 @@ class W_RangeObject(W_Object):
     def method_begin(self, space):
         return self.w_start
 
+    classdef.app_method("""
+    def cover?(other)
+        if self.begin <= other
+            if self.exclude_end?
+                if other < self.end
+                    return true
+                end
+            else
+                if other <= self.end
+                    return true
+                end
+            end
+        end
+        false
+    end
+    """)
+
     @classdef.method("end")
     def method_end(self, space):
         return self.w_end
@@ -84,31 +101,6 @@ class W_RangeObject(W_Object):
     @classdef.method("exclude_end?")
     def method_exclude_end(self, space):
         return space.newbool(self.exclusive)
-
-    # TODO: Pure Ruby!
-    @classdef.method("cover?")
-    def method_cover(self, space, w_other):
-        start = space.int_w(self.w_start)
-        end = space.int_w(self.w_end)
-        elem = space.int_w(w_other)
-        if start <= elem:
-            if self.exclusive:
-                if elem < end:
-                    return space.newbool(True)
-            else:
-                if elem <= end:
-                    return space.newbool(True)
-        return space.newbool(False)
-
-    #classdef.app_method("""
-    #def cover?(other)
-    #    return false if self.begin > other
-    #    if self.exclude_end?
-    #        return true if other < self.end
-    #    end
-    #    return true if other <= self.end
-    #end
-    #""")
 
     classdef.app_method("""
     def each

@@ -47,13 +47,6 @@ class TestRangeObject(BaseRuPyPyTest):
         w_res = space.execute("return (1...5).exclude_end?")
         assert self.unwrap(space, w_res) is True
 
-    def test_cover(self, space):
-        w_res = space.execute("return (1..5).cover?(5)")
-        assert self.unwrap(space, w_res) is True
-
-        w_res = space.execute("return (1...5).cover?(5)")
-        assert self.unwrap(space, w_res) is False
-
     def test_eql(self, space):
         w_res = space.execute("return (1..2) == (1..2)")
         assert self.unwrap(space, w_res) is True
@@ -88,3 +81,20 @@ class TestRangeObject(BaseRuPyPyTest):
 
         #w_res = space.execute("return ('a'..'f').include?('c')")
         #assert self.unwrap(space, w_res) is True
+
+    def test_cover(self, space):
+        w_res = space.execute("return (1..2).cover?(0)")
+        assert self.unwrap(space, w_res) is False
+        w_res = space.execute("return (1..2).cover?(1)")
+        assert self.unwrap(space, w_res) is True
+        w_res = space.execute("return (1..2).cover?(2)")
+        assert self.unwrap(space, w_res) is True
+        w_res = space.execute("return (1..2).cover?(3)")
+        assert self.unwrap(space, w_res) is False
+
+        w_res = space.execute("return (1...2).cover?(0)")
+        assert self.unwrap(space, w_res) is False
+        w_res = space.execute("return (1...2).cover?(1)")
+        assert self.unwrap(space, w_res) is True
+        w_res = space.execute("return (1...2).cover?(2)")
+        assert self.unwrap(space, w_res) is False

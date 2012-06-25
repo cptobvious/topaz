@@ -31,9 +31,16 @@ class TestFixnumObject(BaseRuPyPyTest):
     def test_less(self, space):
         w_res = space.execute("return 1 < 2")
         assert w_res is space.w_true
+        
+    def test_less_equal(self, space):
+        w_res = space.execute("return 1 <= 2")
+        assert w_res is space.w_true
 
     def test_greater(self, space):
         w_res = space.execute("return 1 > 2")
+
+    def test_greater_equal(self, space):
+        w_res = space.execute("return 1 >= 2")
         assert w_res is space.w_false
 
     def test_times(self, space):
