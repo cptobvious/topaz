@@ -20,8 +20,8 @@ class W_RangeObject(W_Object):
         return W_RangeObject(space, space.w_nil, space.w_nil)
 
     @classdef.singleton_method("new")
-    def method_new(self, space, w_start, w_end, w_exclusive = False):
-        if w_exclusive is False:
+    def method_new(self, space, w_start, w_end, w_exclusive = None):
+        if w_exclusive is None:
             w_exclusive = space.newbool(False)
         exclusive = w_exclusive.is_true(space)
         return W_RangeObject(space, w_start, w_end, exclusive)
@@ -41,7 +41,7 @@ class W_RangeObject(W_Object):
     classdef.app_method("""
     def ==(other)
         if other.instance_of? Range
-            if self.begin == other.begin && self.end == other.end && 
+            if self.begin == other.begin && self.end == other.end
                 if self.exclude_end? == other.exclude_end?
                     return true
                 end
@@ -59,6 +59,7 @@ class W_RangeObject(W_Object):
     end
 
     def include?(other)
+        # TODO: bei einstelligen strings vgl ueber ascii werte
         if other.is_a? Fixnum
             return cover? other
         end
