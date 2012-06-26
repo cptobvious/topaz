@@ -168,3 +168,9 @@ class W_StringObject(W_Object):
         self.strategy.to_mutable(space, self)
         self.strategy.clear(self)
         return self
+
+    @classdef.method("ord")
+    def method_ord(self, space):
+        s = space.str_w(self)
+        assert len(s) > 0
+        return space.newint(ord(s[0]))

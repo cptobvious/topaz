@@ -1,4 +1,5 @@
 from ..base import BaseRuPyPyTest
+import py
 
 
 class TestStringObject(BaseRuPyPyTest):
@@ -52,3 +53,15 @@ class TestStringObject(BaseRuPyPyTest):
 
         w_res = space.execute("return ('a' << 'b').clear")
         assert self.unwrap(space, w_res) == ""
+
+    def test_ord(self, space):
+        w_res = space.execute("return 'a'.ord")
+        assert self.unwrap(space, w_res) == 97
+
+        w_res = space.execute("return 'ax'.ord")
+        assert self.unwrap(space, w_res) == 97
+
+    @py.test.mark.xfail
+    def test_ord_fail(self, space):
+        w_res = space.execute("return ''.ord")
+        assert self.unwrap(space, w_res) == 97
