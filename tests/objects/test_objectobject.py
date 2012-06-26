@@ -70,7 +70,6 @@ class TestObjectObject(BaseRuPyPyTest):
         w_res = space.execute("return [].is_a? Array")
         assert self.unwrap(space, w_res) is True
 
-    @py.test.mark.xfail
     def test_is_a_module(self, space):
         w_res = space.execute("return [].is_a? Enumerable")
         assert self.unwrap(space, w_res) is True
@@ -88,7 +87,6 @@ class TestObjectObject(BaseRuPyPyTest):
         w_res = space.execute("return [].instance_of? Array")
         assert self.unwrap(space, w_res) is True
 
-    @py.test.mark.xfail
     def test_instance_of_module(self, space):
         w_res = space.execute("return [].instance_of? Enumerable")
         assert self.unwrap(space, w_res) is False
