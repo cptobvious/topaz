@@ -8,27 +8,23 @@ class W_RangeObject(W_Object):
     classdef = ClassDef("Range", W_Object.classdef)
     classdef.include_module(Enumerable)
 
-    def __init__(self, space, w_start, w_end, exclusive):
+    def __init__(self, space, w_start, w_end, exclusive = False):
         W_Object.__init__(self, space)
-
-        if not isinstance(w_start, W_FixnumObject):
-            raise NotImplementedError(type(w_start))
-
-        if not isinstance(w_end, W_FixnumObject):
-            raise NotImplementedError(type(w_end))
 
         self.w_start = w_start
         self.w_end = w_end
         self.exclusive = exclusive
 
-    # TODO:
-    # This shouldn't take args_w, it should take start, stop, inclusive arguments, and use default args for it. Also, this should probably implement allocate, instead of new.
-    #@classdef.singleton_method("new")
-    #def method_new(self, space, args_w):
-    #    if len(args_w) < 3:
-    #        return W_RangeObject(space, args_w[0], args_w[1], False)
-    #    else:
-    #        return W_RangeObject(space, args_w[0], args_w[1], space.bool_w(args_w[2]))
+    @classdef.singleton_method("allocate")
+    def method_allocate(self, space):
+        return W_RangeObject(space, space.w_nil, space.w_nil)
+
+    @classdef.singleton_method("new")
+    def method_new(self, space, w_start, w_end, w_exclusive = False):
+        if w_exclusive is False:
+            w_exclusive = space.newbool(False)
+        exclusive = w_exclusive.is_true(space)
+        return W_RangeObject(space, w_start, w_end, exclusive)
 
     @classdef.method("begin")
     def method_begin(self, space):
@@ -86,7 +82,7 @@ class W_RangeObject(W_Object):
         end
         false
     end
-    
+
     def each
         i = self.begin
         lim = self.end

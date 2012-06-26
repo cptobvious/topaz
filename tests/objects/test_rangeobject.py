@@ -57,18 +57,19 @@ class TestRangeObject(BaseRuPyPyTest):
         w_res = space.execute("return (1..2) == 4")
         assert self.unwrap(space, w_res) is False
 
-        #w_res = space.execute("return (1..2) == Range.new(1, 2)")
-        #assert self.unwrap(space, w_res) is True
+        w_res = space.execute("return (1..2) == Range.new(1, 2)")
+        assert self.unwrap(space, w_res) is True
 
-        #w_res = space.execute("return (1..2) == Range.new(1, 2, false)")
-        #assert self.unwrap(space, w_res) is True
+        w_res = space.execute("return (1..2) == Range.new(1, 2, false)")
+        assert self.unwrap(space, w_res) is True
 
-        #w_res = space.execute("return (1...2) == Range.new(1, 2, true)")
-        #assert self.unwrap(space, w_res) is True
+        w_res = space.execute("return (1...2) == Range.new(1, 2, true)")
+        assert self.unwrap(space, w_res) is True
 
         w_res = space.execute("return (1..2) == (1...2)")
         assert self.unwrap(space, w_res) is False
 
+    def test_eql_eql(self, space):
         w_res = space.execute("return (1..2) === 1")
         assert self.unwrap(space, w_res) is True
 
@@ -101,3 +102,28 @@ class TestRangeObject(BaseRuPyPyTest):
         assert self.unwrap(space, w_res) is True
         w_res = space.execute("return (1...2).cover?(2)")
         assert self.unwrap(space, w_res) is False
+
+    def test_allocate(self, space):
+        w_res = space.execute("return Range.allocate.begin")
+        assert self.unwrap(space, w_res) is None
+
+        w_res = space.execute("return Range.allocate.end")
+        assert self.unwrap(space, w_res) is None
+
+        w_res = space.execute("return Range.allocate.exclude_end?")
+        assert self.unwrap(space, w_res) is False
+
+    def test_new(self, space):
+        w_res = space.execute("return Range.new(1, 2).begin")
+        assert self.unwrap(space, w_res) == 1
+        w_res = space.execute("return Range.new(1, 2).end")
+        assert self.unwrap(space, w_res) == 2
+        w_res = space.execute("return Range.new(1, 2).exclude_end?")
+        assert self.unwrap(space, w_res) is False
+        
+        w_res = space.execute("return Range.new(1, 2, true).begin")
+        assert self.unwrap(space, w_res) == 1
+        w_res = space.execute("return Range.new(1, 2, true).end")
+        assert self.unwrap(space, w_res) == 2
+        w_res = space.execute("return Range.new(1, 2, true).exclude_end?")
+        assert self.unwrap(space, w_res) is True
