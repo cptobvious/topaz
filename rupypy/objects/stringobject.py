@@ -174,3 +174,10 @@ class W_StringObject(W_Object):
         s = space.str_w(self)
         assert len(s) > 0
         return space.newint(ord(s[0]))
+
+    @classdef.method("succ")
+    def method_succ(self, space):
+        # NOT COMPLETE
+        s1 = space.str_w(self)[-1]
+        s2 = chr(ord(s1) + 1)
+        return space.newstr_fromstr(s2)

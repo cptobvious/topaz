@@ -59,10 +59,28 @@ class W_RangeObject(W_Object):
     end
 
     def include?(other)
-        # TODO: bei einstelligen strings vgl ueber ascii werte
         if other.is_a? Fixnum
             return cover? other
         end
+        
+        if self.begin.is_a?(String) && self.begin.length == 1
+            if self.end.is_a?(String) && self.end.length == 1
+                if other.is_a?(String) && other.length == 1
+                    if self.begin.ord <= other.ord
+                        if self.exclude_end?
+                            if other.ord < self.end.ord
+                                return true
+                            end
+                        else
+                            if other.ord <= self.end.ord
+                                return true
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        
         self.each do |i|
             return true if i == other
         end

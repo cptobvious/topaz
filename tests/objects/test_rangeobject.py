@@ -1,5 +1,4 @@
 from ..base import BaseRuPyPyTest
-import py
 
 
 class TestRangeObject(BaseRuPyPyTest):
@@ -24,7 +23,6 @@ class TestRangeObject(BaseRuPyPyTest):
         w_res = space.execute("return (3..2).to_a")
         assert self.unwrap(space, w_res) == []
 
-    @py.test.mark.xfail
     def test_alphanumeric_values(self, space):
         w_res = space.execute("return ('a'..'e').to_a")
         assert self.unwrap(space, w_res) == ['a', 'b', 'c', 'd', 'e']
@@ -33,12 +31,21 @@ class TestRangeObject(BaseRuPyPyTest):
         w_res = space.execute("return (5..10).begin")
         assert self.unwrap(space, w_res) == 5
 
+        w_res = space.execute("return ('1'..'5').begin")
+        assert self.unwrap(space, w_res) == "1"
+
     def test_end(self, space):
         w_res = space.execute("return (5..10).end")
         assert self.unwrap(space, w_res) == 10
 
         w_res = space.execute("return (5...10).end")
         assert self.unwrap(space, w_res) == 10
+
+        w_res = space.execute("return ('1'..'5').end")
+        assert self.unwrap(space, w_res) == "5"
+
+        w_res = space.execute("return ('1'...'5').end")
+        assert self.unwrap(space, w_res) == "5"
 
     def test_exclude_end(self, space):
         w_res = space.execute("return (1..5).exclude_end?")
@@ -83,8 +90,14 @@ class TestRangeObject(BaseRuPyPyTest):
         w_res = space.execute("return (1..5).member?(6)")
         assert self.unwrap(space, w_res) is False
 
-        #w_res = space.execute("return ('a'..'f').include?('c')")
-        #assert self.unwrap(space, w_res) is True
+        w_res = space.execute("return ('1'..'5').member?('2')")
+        assert self.unwrap(space, w_res) is True
+
+        w_res = space.execute("return ('1'..'5').member?('6')")
+        assert self.unwrap(space, w_res) is False
+
+        w_res = space.execute("return ('a'..'f').member?('c')")
+        assert self.unwrap(space, w_res) is True
 
     def test_cover(self, space):
         w_res = space.execute("return (1..2).cover?(0)")
