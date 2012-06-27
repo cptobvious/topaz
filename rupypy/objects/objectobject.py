@@ -78,7 +78,7 @@ class W_RootObject(W_BaseObject):
             if w_other in klass.included_modules:
                 return space.newbool(True)
             klass = klass.superclass
-            if klass == None:
+            if klass is None:
                 return space.newbool(False)
         return space.newbool(True)
 
