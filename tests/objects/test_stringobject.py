@@ -131,3 +131,37 @@ class TestStringObject(BaseRuPyPyTest):
         assert space.int_w(w_res) == 63
         w_res = space.execute('return "AA".to_i(16)')
         assert space.int_w(w_res) == 170
+
+    def test_succ(self, space):
+        w_res = space.execute("return 'a'.succ")
+        assert self.unwrap(space, w_res) == "b"
+
+        w_res = space.execute("return '12'.succ")
+        assert self.unwrap(space, w_res) == "13"
+
+        w_res = space.execute("return '19'.succ")
+        assert self.unwrap(space, w_res) == "20"
+
+        w_res = space.execute("return 'az'.succ")
+        assert self.unwrap(space, w_res) == "ba"
+
+        w_res = space.execute("return '12'.succ")
+        assert self.unwrap(space, w_res) == "13"
+
+        w_res = space.execute("return '9'.succ")
+        assert self.unwrap(space, w_res) == "10"
+
+        w_res = space.execute("return 'z'.succ")
+        assert self.unwrap(space, w_res) == "aa"
+
+        w_res = space.execute("return 'b99'.succ")
+        assert self.unwrap(space, w_res) == "c00"
+
+        w_res = space.execute("return 'Gz9'.succ")
+        assert self.unwrap(space, w_res) == "Ha0"
+
+        w_res = space.execute("return '+'.succ")
+        assert self.unwrap(space, w_res) == ","
+
+        w_res = space.execute("return ''.succ")
+        assert self.unwrap(space, w_res) == ""

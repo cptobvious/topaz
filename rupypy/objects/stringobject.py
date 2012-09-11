@@ -191,6 +191,32 @@ class W_StringObject(W_Object):
         assert len(s) > 0
         return space.newint(ord(s[0]))
 
+    @classdef.method("succ")
+    def method_succ(self, space):
+        str = space.str_w(self)
+        succ_str = self.__succ(str)
+        return space.newstr_fromstr(succ_str)
+
+    def __succ(self, string):
+        if len(string) == 0:
+            return string
+        ranges = dict({57: 48, 90: 65, 122: 97})
+        old_val = ord(string[-1])
+        new_val = old_val + 1
+
+        if old_val in ranges:
+            new_val = ranges[old_val]
+            if len(string) == 1:
+                if ord(string) == 57:
+                    sub_succ = chr(new_val + 1)
+                else:
+                    sub_succ = chr(new_val)
+            else:
+                sub_succ = self.__succ(string[:len(string) - 1])
+            return sub_succ + chr(new_val)
+
+        return string[:len(string) - 1] + chr(new_val)
+
     @classdef.method("ljust", integer="int", padstr="str")
     def method_ljust(self, space, integer, padstr=" "):
         if not padstr:
