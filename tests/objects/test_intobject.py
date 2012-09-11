@@ -54,9 +54,25 @@ class TestFixnumObject(BaseRuPyPyTest):
         w_res = space.execute("return 1 < 2")
         assert w_res is space.w_true
 
+    def test_less_than(self, space):
+        w_res = space.execute("return 1 <= 2")
+        assert w_res is space.w_true
+        w_res = space.execute("return 2 <= 2")
+        assert w_res is space.w_true
+        w_res = space.execute("return 3 <= 2")
+        assert w_res is space.w_false
+
     def test_greater(self, space):
         w_res = space.execute("return 1 > 2")
         assert w_res is space.w_false
+
+    def test_greater_than(self, space):
+        w_res = space.execute("return 1 >= 2")
+        assert w_res is space.w_false
+        w_res = space.execute("return 2 >= 2")
+        assert w_res is space.w_true
+        w_res = space.execute("return 3 >= 2")
+        assert w_res is space.w_true
 
     def test_times(self, space):
         w_res = space.execute("""
@@ -122,6 +138,6 @@ class TestFixnumObject(BaseRuPyPyTest):
     def test_succ(self, space):
         w_res = space.execute("return -1.succ")
         assert self.unwrap(space, w_res) == 0
-        
+
         w_res = space.execute("return 7.succ")
         assert self.unwrap(space, w_res) == 8
