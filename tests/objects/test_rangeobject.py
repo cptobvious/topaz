@@ -13,6 +13,10 @@ class TestRangeObject(BaseRuPyPyTest):
         w_res = space.execute("return (1..1).map {|x| x}")
         assert self.unwrap(space, w_res) == [1]
 
+    def test_alphanumeric_values(self, space):
+        w_res = space.execute("return ('a'..'e').to_a")
+        assert self.unwrap(space, w_res) == ['a', 'b', 'c', 'd', 'e']
+
     def test_to_a(self, space):
         w_res = space.execute("return (1..3).to_a")
         assert self.unwrap(space, w_res) == [1, 2, 3]
@@ -88,6 +92,9 @@ class TestRangeObject(BaseRuPyPyTest):
 
         w_res = space.execute("return ('1'..'5').member?('2')")
         assert self.unwrap(space, w_res) is True
+
+        w_res = space.execute("return ('1'..'5').member?('6')")
+        assert self.unwrap(space, w_res) is False
 
         w_res = space.execute("return ('a'..'f').member?('c')")
         assert self.unwrap(space, w_res) is True
