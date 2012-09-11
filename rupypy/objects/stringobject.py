@@ -185,6 +185,12 @@ class W_StringObject(W_Object):
         self.clear(space)
         return self
 
+    @classdef.method("ord")
+    def method_ord(self, space):
+        s = space.str_w(self)
+        assert len(s) > 0
+        return space.newint(ord(s[0]))
+
     @classdef.method("ljust", integer="int", padstr="str")
     def method_ljust(self, space, integer, padstr=" "):
         if not padstr:

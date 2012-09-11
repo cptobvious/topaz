@@ -18,6 +18,13 @@ class TestStringObject(BaseRuPyPyTest):
         w_res = space.execute('return "ABC".to_str')
         assert space.str_w(w_res) == "ABC"
 
+    def test_ord(self, space):
+        w_res = space.execute("return 'a'.ord")
+        assert self.unwrap(space, w_res) == 97
+
+        w_res = space.execute("return 'ax'.ord")
+        assert self.unwrap(space, w_res) == 97
+
     def test_length(self, space):
         w_res = space.execute("return 'ABC'.length")
         assert space.int_w(w_res) == 3
