@@ -83,6 +83,7 @@ class ObjectSpace(object):
             W_StringObject, W_SymbolObject,
             W_NumericObject, W_IntegerObject, W_FloatObject, W_FixnumObject,
             W_ArrayObject, W_HashObject,
+            W_RangeObject,
             W_IOObject, W_FileObject,
             W_TimeObject,
             W_ExceptionObject, W_NoMethodError, W_LoadError, W_ZeroDivisionError,
