@@ -8,6 +8,8 @@ from pypy.rlib.rerased import new_static_erasing_pair
 from rupypy.module import ClassDef
 from rupypy.modules.comparable import Comparable
 from rupypy.objects.objectobject import W_Object
+from rupypy.objects.intobject import W_FixnumObject
+from rupypy.objects.rangeobject import W_RangeObject
 from rupypy.utils.formatting import StringFormatter
 
 
@@ -288,6 +290,7 @@ class W_StringObject(W_Object):
         return space.newint(self.strategy.hash(self.str_storage))
 
     @classdef.method("[]")
+    @classdef.method("slice")
     def method_subscript(self, space, w_idx, w_count=None):
         start, end, as_range, nil = space.subscript_access(self.length(), w_idx, w_count=w_count)
         if nil:
@@ -446,6 +449,30 @@ class W_StringObject(W_Object):
         new_string = self.tr_trans(space, source, replacement, True)
         self.replace(space, new_string)
         return self if new_string else space.w_nil
+
+    @classdef.method("slice!")
+    def method_slice_i(self, space, w_idx_start, w_idx_end=None):
+        slc = None
+        string = space.str_w(self)
+        if isinstance(w_idx_start, W_FixnumObject):
+            idx_start = space.int_w(w_idx_start)
+            if w_idx_end is None:
+                slc = string[idx_start]
+                string = string[:idx_start] + string[idx_start + 1:]
+            else:
+                idx_end = space.int_w(w_idx_end)
+                slc = string[idx_start:idx_end + 1]
+                string = string[:idx_start] + string[idx_end + 1:]
+        elif isinstance(w_idx_start, W_RangeObject):
+            idx_start = space.int_w(w_idx_start.w_start)
+            idx_end = space.int_w(w_idx_start.w_end)
+            slc = string[idx_start:idx_end + 1]
+            string = string[:idx_start] + string[idx_end + 1:]
+        else:
+            raise NotImplementedError
+
+        self.replace(space, string)
+        return space.newstr_fromstr(slc) if slc else space.w_nil
 
     classdef.app_method("""
     def empty?

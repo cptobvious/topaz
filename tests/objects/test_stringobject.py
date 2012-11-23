@@ -215,6 +215,55 @@ class TestStringObject(BaseRuPyPyTest):
         w_res = space.execute("return '123'.downcase!")
         assert self.unwrap(space, w_res) is None
 
+    def test_slice(self, space):
+        w_res = space.execute("return 'Argo Fuck Yourself'.slice(10)")
+        assert self.unwrap(space, w_res) == "Y"
+
+        w_res = space.execute("return 'Argo Fuck Yourself'.slice(10, 17)")
+        assert self.unwrap(space, w_res) == "Yourself"
+
+        w_res = space.execute("return 'Argo Fuck Yourself'.slice(10..17)")
+        assert self.unwrap(space, w_res) == "Yourself"
+
+        w_res = space.execute("""
+        a = "Argo Fuck Yourself"
+        a.slice! 10
+        return a
+        """)
+        assert self.unwrap(space, w_res) == "Argo Fuck ourself"
+
+        w_res = space.execute("""
+        a = "Argo Fuck Yourself"
+        return a.slice! 10
+        """)
+        assert self.unwrap(space, w_res) == "Y"
+
+        w_res = space.execute("""
+        a = "Argo Fuck Yourself"
+        a.slice! 10, 17
+        return a
+        """)
+        assert self.unwrap(space, w_res) == "Argo Fuck "
+
+        w_res = space.execute("""
+        a = "Argo Fuck Yourself"
+        return a.slice! 10, 17
+        """)
+        assert self.unwrap(space, w_res) == "Yourself"
+
+        w_res = space.execute("""
+        a = "Argo Fuck Yourself"
+        a.slice! 10..17
+        return a
+        """)
+        assert self.unwrap(space, w_res) == "Argo Fuck "
+
+        w_res = space.execute("""
+        a = "Argo Fuck Yourself"
+        return a.slice! 10..17
+        """)
+        assert self.unwrap(space, w_res) == "Yourself"
+
     def test_tr(self, space):
         w_res = space.execute("return 'hello'.tr('el', 'ip')")
         assert space.str_w(w_res) == "hippo"
