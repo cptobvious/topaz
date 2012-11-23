@@ -227,42 +227,63 @@ class TestStringObject(BaseRuPyPyTest):
 
         w_res = space.execute("""
         a = "Argo Fuck Yourself"
-        a.slice! 10
+        b = a.slice! 10
+        return [a, b]
+        """)
+        a, b = self.unwrap(space, w_res)
+        assert a == "Argo Fuck ourself"
+        assert b == "Y"
+
+        w_res = space.execute("""
+        a = "Argo Fuck Yourself"
+        b = a.slice! 10, 17
+        return [a, b]
+        """)
+        a, b = self.unwrap(space, w_res)
+        assert a == "Argo Fuck "
+        assert b == "Yourself"
+
+        w_res = space.execute("""
+        a = "Argo Fuck Yourself"
+        b = a.slice! 10..17
+        return [a, b]
+        """)
+        a, b = self.unwrap(space, w_res)
+        assert a == "Argo Fuck "
+        assert b == "Yourself"
+
+    def test_assign(self, space):
+        w_res = space.execute("""
+        a = "hallo"
+        a[1] = "e e"
         return a
         """)
-        assert self.unwrap(space, w_res) == "Argo Fuck ourself"
+        assert self.unwrap(space, w_res) == "he ello"
 
         w_res = space.execute("""
-        a = "Argo Fuck Yourself"
-        return a.slice! 10
-        """)
-        assert self.unwrap(space, w_res) == "Y"
-
-        w_res = space.execute("""
-        a = "Argo Fuck Yourself"
-        a.slice! 10, 17
+        a = "hallo"
+        a["al"] = "e e"
         return a
         """)
-        assert self.unwrap(space, w_res) == "Argo Fuck "
+        assert self.unwrap(space, w_res) == "he elo"
 
         w_res = space.execute("""
-        a = "Argo Fuck Yourself"
-        return a.slice! 10, 17
-        """)
-        assert self.unwrap(space, w_res) == "Yourself"
-
-        w_res = space.execute("""
-        a = "Argo Fuck Yourself"
-        a.slice! 10..17
+        a = "hallo"
+        a[1,3] = "X"
         return a
         """)
-        assert self.unwrap(space, w_res) == "Argo Fuck "
+        assert self.unwrap(space, w_res) == "hXo"
 
         w_res = space.execute("""
-        a = "Argo Fuck Yourself"
-        return a.slice! 10..17
+        a = "hallo"
+        a[1..3] = "X"
+        return a
         """)
-        assert self.unwrap(space, w_res) == "Yourself"
+        assert self.unwrap(space, w_res) == "hXo"
+
+    def test_index(self, space):
+        w_res = space.execute("return 'hello'['e']")
+        assert self.unwrap(space, w_res) == 1
 
     def test_tr(self, space):
         w_res = space.execute("return 'hello'.tr('el', 'ip')")

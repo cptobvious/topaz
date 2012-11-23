@@ -292,15 +292,21 @@ class W_StringObject(W_Object):
     @classdef.method("[]")
     @classdef.method("slice")
     def method_subscript(self, space, w_idx, w_count=None):
-        start, end, as_range, nil = space.subscript_access(self.length(), w_idx, w_count=w_count)
-        if nil:
-            return space.w_nil
-        elif as_range:
-            assert start >= 0
-            assert end >= 0
-            return self.strategy.getslice(space, self.str_storage, start, end)
+        if isinstance(w_idx, W_StringObject):
+            string = space.str_w(self)
+            needle = space.str_w(w_idx)
+            idx = string.find(needle)
+            return space.newint(idx)
         else:
-            return space.newstr_fromstr(self.strategy.getitem(self.str_storage, start))
+            start, end, as_range, nil = space.subscript_access(self.length(), w_idx, w_count=w_count)
+            if nil:
+                return space.w_nil
+            elif as_range:
+                assert start >= 0
+                assert end >= 0
+                return self.strategy.getslice(space, self.str_storage, start, end)
+            else:
+                return space.newstr_fromstr(self.strategy.getitem(self.str_storage, start))
 
     @classdef.method("<=>")
     def method_comparator(self, space, w_other):
@@ -473,6 +479,40 @@ class W_StringObject(W_Object):
 
         self.replace(space, string)
         return space.newstr_fromstr(slc) if slc else space.w_nil
+
+    @classdef.method("[]=")
+    def method_assign(self, space, w_arg1, w_arg2, w_arg3=None):
+        string = space.str_w(self)
+
+        if w_arg3 is None:
+            w_idx = w_arg1
+            w_string = w_arg2
+
+            if isinstance(w_idx, W_FixnumObject):
+                idx = space.int_w(w_idx)
+                string = string[:idx] + space.str_w(w_string) + string[idx + 1:]
+            elif isinstance(w_idx, W_RangeObject):
+                idx_start = space.int_w(w_idx.w_start)
+                idx_end = space.int_w(w_idx.w_end)
+                string = string[:idx_start] + space.str_w(w_string) + string[idx_end + 1:]
+            elif isinstance(w_idx, W_StringObject):
+                w_found_idx = self.method_subscript(space, w_idx)
+                idx_start = space.int_w(w_found_idx)
+                idx_end = idx_start + len(space.str_w(w_idx)) - 1
+                string = string[:idx_start] + space.str_w(w_string) + string[idx_end + 1:]
+            else:
+                raise NotImplementedError
+        else:
+            w_idx_start = w_arg1
+            w_idx_end = w_arg2
+            w_string = w_arg3
+
+            idx_start = space.int_w(w_idx_start)
+            idx_end = space.int_w(w_idx_end)
+            string = string[:idx_start] + space.str_w(w_string) + string[idx_end + 1:]
+
+        self.replace(space, string)
+        return self
 
     classdef.app_method("""
     def empty?
