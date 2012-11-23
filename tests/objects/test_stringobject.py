@@ -282,6 +282,9 @@ class TestStringObject(BaseRuPyPyTest):
         assert self.unwrap(space, w_res) == "hXo"
 
     def test_index(self, space):
+        w_res = space.execute("return 'hello'.index('e')")
+        assert self.unwrap(space, w_res) == 1
+
         w_res = space.execute("return 'hello'['e']")
         assert self.unwrap(space, w_res) == 1
 

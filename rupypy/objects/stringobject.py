@@ -293,10 +293,7 @@ class W_StringObject(W_Object):
     @classdef.method("slice")
     def method_subscript(self, space, w_idx, w_count=None):
         if isinstance(w_idx, W_StringObject):
-            string = space.str_w(self)
-            needle = space.str_w(w_idx)
-            idx = string.find(needle)
-            return space.newint(idx)
+            return self.method_index(space, w_idx)
         else:
             start, end, as_range, nil = space.subscript_access(self.length(), w_idx, w_count=w_count)
             if nil:
@@ -307,6 +304,13 @@ class W_StringObject(W_Object):
                 return self.strategy.getslice(space, self.str_storage, start, end)
             else:
                 return space.newstr_fromstr(self.strategy.getitem(self.str_storage, start))
+
+    @classdef.method("index")
+    def method_index(self, space, w_idx):
+        string = space.str_w(self)
+        needle = space.str_w(w_idx)
+        idx = string.find(needle)
+        return space.newint(idx)
 
     @classdef.method("<=>")
     def method_comparator(self, space, w_other):
