@@ -2,6 +2,9 @@ from ..base import BaseRuPyPyTest
 
 
 class TestRangeObject(BaseRuPyPyTest):
+    def test_name(self, space):
+        space.execute("Range")
+
     def test_map(self, space):
         w_res = space.execute("return (1..3).map {|x| x * 5}")
         assert self.unwrap(space, w_res) == [5, 10, 15]
@@ -60,7 +63,7 @@ class TestRangeObject(BaseRuPyPyTest):
 
         w_res = space.execute("return (1...2) == (1...2)")
         assert self.unwrap(space, w_res) is True
-        
+
         w_res = space.execute("return (1..2) == 4")
         assert self.unwrap(space, w_res) is False
 
@@ -81,6 +84,12 @@ class TestRangeObject(BaseRuPyPyTest):
         assert self.unwrap(space, w_res) is True
 
         w_res = space.execute("return (1..2) === 3")
+        assert self.unwrap(space, w_res) is False
+
+        w_res = space.execute("return (1..10) === 5")
+        assert self.unwrap(space, w_res) is True
+
+        w_res = space.execute("return (1..10) === -1")
         assert self.unwrap(space, w_res) is False
 
     def test_include(self, space):
@@ -133,10 +142,18 @@ class TestRangeObject(BaseRuPyPyTest):
         assert self.unwrap(space, w_res) == 2
         w_res = space.execute("return Range.new(1, 2).exclude_end?")
         assert self.unwrap(space, w_res) is False
-        
+
         w_res = space.execute("return Range.new(1, 2, true).begin")
         assert self.unwrap(space, w_res) == 1
         w_res = space.execute("return Range.new(1, 2, true).end")
         assert self.unwrap(space, w_res) == 2
         w_res = space.execute("return Range.new(1, 2, true).exclude_end?")
         assert self.unwrap(space, w_res) is True
+
+    def test_first(self, space):
+        w_res = space.execute("return (1..10).first")
+        assert space.int_w(w_res) == 1
+
+    def test_last(self, space):
+        w_res = space.execute("return (1..10).last")
+        assert space.int_w(w_res) == 10

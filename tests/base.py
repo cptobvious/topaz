@@ -4,30 +4,32 @@ import py
 
 from rupypy.error import RubyError
 from rupypy.objects.arrayobject import W_ArrayObject
-from rupypy.objects.intobject import W_FixnumObject
+from rupypy.objects.bignumobject import W_BignumObject
 from rupypy.objects.boolobject import W_TrueObject, W_FalseObject
 from rupypy.objects.floatobject import W_FloatObject
-from rupypy.objects.stringobject import W_StringObject
+from rupypy.objects.intobject import W_FixnumObject
 from rupypy.objects.moduleobject import W_ModuleObject
-from rupypy.objects.objectobject import W_Object
+from rupypy.objects.stringobject import W_StringObject
 from rupypy.objects.symbolobject import W_SymbolObject
 
 
 class BaseRuPyPyTest(object):
     @contextmanager
-    def raises(self, exc_name, msg=None):
+    def raises(self, space, exc_name, msg=None):
         with py.test.raises(RubyError) as exc:
             yield
-        assert exc.value.w_value.classdef.name == exc_name
+        assert space.getclass(exc.value.w_value).name == exc_name
         if msg is not None:
             assert exc.value.w_value.msg == msg
 
     def find_const(self, space, name):
-        return space.find_const(space.getclassfor(W_Object), name)
+        return space.find_const(space.w_object, name)
 
     def unwrap(self, space, w_obj):
         if isinstance(w_obj, W_FixnumObject):
             return space.int_w(w_obj)
+        elif isinstance(w_obj, W_BignumObject):
+            return space.bigint_w(w_obj)
         elif isinstance(w_obj, W_FloatObject):
             return space.float_w(w_obj)
         elif isinstance(w_obj, W_TrueObject):

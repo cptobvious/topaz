@@ -9,6 +9,7 @@ class ClassDef(object):
         self.app_methods = []
         self.singleton_methods = {}
         self.includes = []
+        self.setup_class_func = None
         self.superclassdef = superclassdef
         self.cls = None
 
@@ -37,9 +38,21 @@ class ClassDef(object):
 
     def singleton_method(self, name, **argspec):
         def adder(func):
+            if isinstance(func, staticmethod):
+                func = func.__func__
             self.singleton_methods[name] = (func, argspec)
             return staticmethod(func)
         return adder
+
+    def setup_class(self, func):
+        self.setup_class_func = func
+        return func
+
+    def undefine_allocator(self):
+        @self.singleton_method("allocate")
+        def method_allocate(self, space):
+            raise space.error(space.w_TypeError, "allocator undefined for %s" % self.name)
+        return method_allocate
 
 
 class Module(object):
@@ -53,24 +66,35 @@ class ModuleDef(object):
         self.app_methods = []
 
         self.singleton_methods = {}
+        self.setup_module_func = None
 
     def __deepcopy__(self, memo):
         return self
 
-    def method(self, name, **argspec):
+    def method(self, __name, **argspec):
+        name = __name
+
         def adder(func):
             self.methods[name] = (func, argspec)
+            return func
         return adder
 
     def app_method(self, source):
         self.app_methods.append(source)
 
-    def function(self, name, **argspec):
+    def function(self, __name, **argspec):
+        name = __name
+
         def adder(func):
-            # XXX: should be private, once we have visibility
+            # TODO: should be private, once we have visibility
             self.methods[name] = (func, argspec)
             self.singleton_methods[name] = (func, argspec)
+            return func
         return adder
+
+    def setup_module(self, func):
+        self.setup_module_func = func
+        return func
 
 
 class ClassCache(Cache):
@@ -102,7 +126,8 @@ class ClassCache(Cache):
             w_mod = self.space.getmoduleobject(mod.moduledef)
             self.space.send(w_class, self.space.newsymbol("include"), [w_mod])
 
-        classdef.cls.setup_class(self.space, w_class)
+        if classdef.setup_class_func is not None:
+            classdef.setup_class_func(classdef.cls, self.space, w_class)
 
 
 class ModuleCache(Cache):
@@ -120,4 +145,8 @@ class ModuleCache(Cache):
         for name, (method, argspec) in moduledef.singleton_methods.iteritems():
             func = WrapperGenerator(name, method, argspec, W_ModuleObject).generate_wrapper()
             w_mod.attach_method(self.space, name, W_BuiltinFunction(name, func))
+
+        if moduledef.setup_module_func is not None:
+            moduledef.setup_module_func(self.space, w_mod)
+
         yield w_mod

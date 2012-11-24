@@ -6,12 +6,12 @@ class BaseSymbolTable(object):
     FREEVAR = 0
     CELLVAR = 1
 
-    def __init__(self):
+    def __init__(self, parent_symtable=None):
+        self.parent_symtable = parent_symtable
         self.subscopes = {}
-        self.locals = {}
         self.cells = {}
+        self.arguments = []
 
-        self.local_numbers = {}
         self.cell_numbers = {}
 
     def add_subscope(self, node, symtable):
@@ -20,22 +20,14 @@ class BaseSymbolTable(object):
     def get_subscope(self, node):
         return self.subscopes[node]
 
+    def declare_argument(self, name):
+        self.arguments.append(name)
+        self.declare_local(name)
+
     def declare_local(self, name):
-        if name not in self.locals:
-            self.locals[name] = None
+        self.cells[name] = self.CELLVAR
 
     def is_defined(self, name):
-        return self.is_local(name) or self.is_cell(name)
-
-    def is_local(self, name):
-        return name in self.locals
-
-    def get_local_num(self, name):
-        if name not in self.local_numbers:
-            self.local_numbers[name] = len(self.local_numbers)
-        return self.local_numbers[name]
-
-    def is_cell(self, name):
         return name in self.cells
 
     def get_cell_num(self, name):
@@ -53,25 +45,17 @@ class SymbolTable(BaseSymbolTable):
         pass
 
     def upgrade_to_closure(self, name):
-        if name in self.locals:
-            del self.locals[name]
-            self.cells[name] = self.CELLVAR
+        pass
 
 
 class BlockSymbolTable(BaseSymbolTable):
-    def __init__(self, parent_symtable):
-        BaseSymbolTable.__init__(self)
-        self.parent_symtable = parent_symtable
-
     def declare_read(self, name):
-        if (name not in self.locals and name not in self.cells and
-            self.parent_symtable.is_defined(name)):
-
+        if name not in self.cells and self.parent_symtable.is_defined(name):
             self.cells[name] = self.FREEVAR
             self.parent_symtable.upgrade_to_closure(name)
 
     def declare_write(self, name):
-        if name not in self.locals and name not in self.cells:
+        if name not in self.cells:
             if self.parent_symtable.is_defined(name):
                 self.cells[name] = self.FREEVAR
                 self.parent_symtable.upgrade_to_closure(name)
@@ -82,15 +66,22 @@ class BlockSymbolTable(BaseSymbolTable):
         return BaseSymbolTable.is_defined(self, name) or self.parent_symtable.is_defined(name)
 
     def upgrade_to_closure(self, name):
-        if self.is_local(name):
-            del self.locals[name]
-            self.cells[name] = self.CELLVAR
-        else:
+        if name not in self.cells:
             self.parent_symtable.upgrade_to_closure(name)
             self.cells[name] = self.FREEVAR
 
 
+class SharedScopeSymbolTable(BlockSymbolTable):
+    def declare_write(self, name):
+        self.parent_symtable.declare_write(name)
+        BlockSymbolTable.declare_write(self, name)
+
+
 class CompilerContext(object):
+    F_BLOCK_LOOP = 0
+    F_BLOCK_FINALLY = 1
+    F_BLOCK_FINALLY_END = 2
+
     def __init__(self, space, code_name, symtable, filepath):
         self.space = space
         self.code_name = code_name
@@ -101,14 +92,16 @@ class CompilerContext(object):
         self.current_lineno = -1
 
         self.current_block = self.first_block = self.new_block()
+        self.frame_blocks = []
 
     def create_bytecode(self, args, defaults, splat_arg, block_arg):
-        locs = [None] * len(self.symtable.local_numbers)
-        for name, pos in self.symtable.local_numbers.iteritems():
-            locs[pos] = name
-
         cellvars = []
         freevars = []
+
+        # Make sure that any cell vars have a number.
+        for name in self.symtable.cells:
+            if name not in self.symtable.cell_numbers:
+                self.symtable.get_cell_num(name)
 
         cells = [None] * len(self.symtable.cell_numbers)
         for name, pos in self.symtable.cell_numbers.iteritems():
@@ -138,7 +131,6 @@ class CompilerContext(object):
             splat_arg,
             block_arg,
             defaults,
-            locs,
             cellvars,
             freevars,
             lineno_table,
@@ -182,7 +174,7 @@ class CompilerContext(object):
                 target_depth = depth
                 jump_op = instr.opcode
                 if jump_op in [consts.SETUP_FINALLY, consts.SETUP_EXCEPT]:
-                    target_depth += 2
+                    target_depth += 3
                     max_depth = max(max_depth, target_depth)
                 max_depth = self._count_stackdepth(instr.jump, target_depth, max_depth)
         if block.next_block is not None:
@@ -201,6 +193,24 @@ class CompilerContext(object):
         elif stack_effect == consts.UNPACK_EFFECT:
             stack_effect = instr.arg0 - 1
         return stack_effect
+
+    def set_lineno(self, lineno):
+        return SetLinenoConextManager(self, lineno)
+
+    def enter_frame_block(self, block_type, block):
+        return EnterFrameBlockContextManager(self, block_type, block)
+
+    def in_frame_block(self, block_type):
+        for t, _ in self.frame_blocks:
+            if t == block_type:
+                return True
+        return False
+
+    def find_frame_block(self, block_type):
+        for i in xrange(len(self.frame_blocks) - 1, -1, -1):
+            if self.frame_blocks[i][0] == block_type:
+                return self.frame_blocks[i][1]
+        raise SystemError
 
     def new_block(self):
         return Block()
@@ -307,3 +317,31 @@ class Instruction(object):
     def patch_loc(self, offsets):
         if self.has_jump():
             self.arg0 = offsets[self.jump]
+
+
+class SetLinenoConextManager(object):
+    def __init__(self, ctx, lineno):
+        self.ctx = ctx
+        self.lineno = lineno
+
+    def __enter__(self):
+        self.orig_lineno = self.ctx.current_lineno
+        self.ctx.current_lineno = self.lineno
+
+    def __exit__(self, exc_type, exc_value, tb):
+        self.ctx.current_lineno = self.orig_lineno
+
+
+class EnterFrameBlockContextManager(object):
+    def __init__(self, ctx, block_type, block):
+        self.ctx = ctx
+        self.block_type = block_type
+        self.block = block
+
+    def __enter__(self):
+        self.ctx.frame_blocks.append((self.block_type, self.block))
+
+    def __exit__(self, exc_type, exc_value, tb):
+        block_type, block = self.ctx.frame_blocks.pop()
+        assert block_type == self.block_type
+        assert block is self.block
