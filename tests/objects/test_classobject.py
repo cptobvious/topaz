@@ -1,5 +1,5 @@
-import pytest
 from ..base import BaseTopazTest
+import pytest
 
 
 class TestClassObject(BaseTopazTest):
@@ -17,6 +17,16 @@ class TestClassObject(BaseTopazTest):
         return Foo::Bar::Baz.name
         """)
         assert space.str_w(w_res) == "Foo::Bar::Baz"
+
+    def test_class_new_new(self, space):
+        w_res = space.execute("return Class.new.class.name")
+        assert space.str_w(w_res) == "Class"
+
+        w_res = space.execute("return Class.new.new.class.name")
+        assert w_res == space.w_nil
+
+        with self.raises(space, "NoMethodError"):
+            space.execute("return Class.new.new.new")
 
     def test_to_s(self, space):
         w_res = space.execute("return 1.class.to_s")
@@ -57,6 +67,10 @@ class TestClassObject(BaseTopazTest):
         assert space.str_w(w_res) == "Object"
         w_res = space.execute("return Class.new(String).superclass.name")
         assert space.str_w(w_res) == "String"
+
+    def test_class_initialize(self, space):
+        with self.raises(space, "NoMethodError"):
+            space.execute("return Class.initialize")
 
     def test_new(self, space):
         w_res = space.execute("""

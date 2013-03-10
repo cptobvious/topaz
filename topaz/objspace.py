@@ -64,6 +64,7 @@ from topaz.objects.randomobject import W_RandomObject
 from topaz.objects.rangeobject import W_RangeObject
 from topaz.objects.regexpobject import W_RegexpObject
 from topaz.objects.stringobject import W_StringObject
+from topaz.objects.structobject import W_StructObject
 from topaz.objects.symbolobject import W_SymbolObject
 from topaz.objects.threadobject import W_ThreadObject
 from topaz.objects.timeobject import W_TimeObject
@@ -114,6 +115,7 @@ class ObjectSpace(object):
         self.w_integer = self.getclassfor(W_IntegerObject)
         self.w_module = self.getclassfor(W_ModuleObject)
         self.w_string = self.getclassfor(W_StringObject)
+        self.w_struct = self.getclassfor(W_StructObject)
         self.w_regexp = self.getclassfor(W_RegexpObject)
         self.w_hash = self.getclassfor(W_HashObject)
         self.w_method = self.getclassfor(W_MethodObject)
@@ -172,6 +174,7 @@ class ObjectSpace(object):
             self.getclassfor(W_EncodingObject),
             self.getclassfor(W_IntegerObject),
             self.getclassfor(W_RandomObject),
+            self.getclassfor(W_StructObject),
             self.getclassfor(W_ThreadObject),
             self.getclassfor(W_TimeObject),
             self.getclassfor(W_MethodObject),
@@ -503,7 +506,7 @@ class ObjectSpace(object):
         if valid:
             for i in range(1, len(name)):
                 ch = name[i]
-                if not (ch.isalnum() or ch == "_" or ord(ch) > 127):
+                if not (ch.isalnum() or ch == "_" or ord(ch) > 127 or ch == ":"):
                     valid = False
                     break
         if not valid:

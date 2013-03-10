@@ -84,12 +84,13 @@ class W_ClassObject(W_ModuleObject):
 
     @classdef.method("initialize")
     def method_initialize(self, space, args_w):
-        pass
+        raise space.error(space.w_NoMethodError, "private method `initialize' called for Class:Class")
 
     @classdef.method("new")
     def method_new(self, space, args_w, block):
         w_obj = space.send(self, space.newsymbol("allocate"), args_w, block)
-        space.send(w_obj, space.newsymbol("initialize"), args_w, block)
+        if not isinstance(w_obj, W_ClassObject):
+            space.send(w_obj, space.newsymbol("initialize"), args_w, block)
         return w_obj
 
     @classdef.method("allocate")

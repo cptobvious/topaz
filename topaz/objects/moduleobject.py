@@ -81,8 +81,9 @@ class W_ModuleObject(W_RootObject):
 
     classdef = ClassDef("Module", W_RootObject.classdef, filepath=__file__)
 
-    def __init__(self, space, name):
+    def __init__(self, space, name, w_scope=None):
         self.name = name
+        self.w_scope = w_scope
         self.klass = None
         self.version = VersionTag()
         self.methods_w = {}
