@@ -167,12 +167,13 @@ class W_RootObject(W_BaseObject):
     @classdef.method("instance_variables")
     def method_instance_variables(self, space):
         array = []
+        assert isinstance(self, W_Object)
         node = self.map
         while isinstance(node, AttributeNode):
             array.append(space.newstr_fromstr(node.name))
             node = node.prev
-
-        return space.newarray(array[::-1])
+        reversed_array = array.reverse()
+        return space.newarray(reversed_array)
 
     @classdef.method("instance_variable_get", name="str")
     def method_instance_variable_get(self, space, name):
