@@ -1,11 +1,26 @@
 # coding=utf-8
 
 from ..base import BaseTopazTest
+import pytest
 
 
 class TestModuleObject(BaseTopazTest):
+    @pytest.mark.xfail
     def test_name(self, space):
-        space.execute("Module")
+        w_res = space.execute("return Module.class.to_s")
+        assert space.str_w(w_res) == "Class"
+
+        w_res = space.execute("return Math.class.to_s")
+        assert space.str_w(w_res) == "Module"
+
+        w_res = space.execute("return Module.new.name")
+        assert w_res == space.w_nil
+
+        w_res = space.execute("return Module.name")
+        assert space.str_w(w_res) == "Module"
+
+        w_res = space.execute("return Math::DomainError.name")
+        assert space.str_w(w_res) == "Math::DomainError"
 
     def test_new(self, space):
         w_res = space.execute("""

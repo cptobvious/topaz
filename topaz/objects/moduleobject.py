@@ -256,10 +256,9 @@ class W_ModuleObject(W_RootObject):
 
     @classdef.singleton_method("allocate")
     def method_allocate(self, space):
-        # TODO: this should really store None for the name and all places
-        # reading the name should handle None
-        return W_ModuleObject(space, "")
+        return W_ModuleObject(space, None)
 
+    @classdef.method("inspect")
     @classdef.method("to_s")
     def method_to_s(self, space):
         return space.newstr_fromstr(self.name)
@@ -347,13 +346,16 @@ class W_ModuleObject(W_RootObject):
         pass
 
     @classdef.method("extended")
-    def method_included(self, space, w_mod):
+    def method_extended(self, space, w_mod):
         # TODO: should be private
         pass
 
     @classdef.method("name")
     def method_name(self, space):
-        return space.newstr_fromstr(self.name)
+        if self.name is None:
+            return space.w_nil
+        else:
+            return space.newstr_fromstr(self.name)
 
     @classdef.method("private")
     def method_private(self, space, args_w):

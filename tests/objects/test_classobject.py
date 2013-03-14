@@ -1,6 +1,15 @@
-class TestClassObject(object):
+from ..base import BaseTopazTest
+
+
+class TestClassObject(BaseTopazTest):
     def test_name(self, space):
         space.execute("Class")
+
+        w_res = space.execute("""
+        class Foo; end
+        return Foo.new.class.to_s
+        """)
+        assert space.str_w(w_res) == "Foo"
 
     def test_to_s(self, space):
         w_res = space.execute("return 1.class.to_s")
@@ -14,6 +23,10 @@ class TestClassObject(object):
         assert space.str_w(w_res) == "Object"
         w_res = space.execute("return Class.new(String).superclass.name")
         assert space.str_w(w_res) == "String"
+
+    def test_instance_variables(self, space):
+        w_res = space.execute("return Class.new.new.instance_variables")
+        assert self.unwrap(space, w_res) == []
 
     def test_new(self, space):
         w_res = space.execute("""

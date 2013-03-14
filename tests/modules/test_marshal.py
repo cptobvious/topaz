@@ -1,4 +1,5 @@
 from ..base import BaseTopazTest
+import pytest
 
 
 class TestMarshal(BaseTopazTest):
@@ -365,6 +366,58 @@ class TestMarshal(BaseTopazTest):
 
         w_res = space.execute("return Marshal.load(Marshal.dump(['foo', 'bar']))")
         assert self.unwrap(space, w_res) == ["foo", "bar"]
+
+    @pytest.mark.xfail
+    def test_dump_class(self, space):
+        w_res = space.execute("return Marshal.dump(String)")
+        assert space.str_w(w_res) == "\x04\bc\vString"
+
+        w_res = space.execute("return Marshal.dump(Math::DomainError)")
+        assert space.str_w(w_res) == "\x04\bc\x16Math::DomainError"
+
+    def test_load_class(self, space):
+        w_res = space.execute("return Marshal.load('\x04\bc\vString')")
+        assert w_res is space.w_string
+
+    @pytest.mark.xfail
+    def test_dump_module(self, space):
+        w_res = space.execute("return Marshal.dump(Kernel)")
+        assert space.str_w(w_res) == "\x04\bm\vKernel"
+
+        w_res = space.execute("""
+        module Foo
+            module Bar; end
+        end
+        return Marshal.dump(Foo::Bar)
+        """)
+        assert space.str_w(w_res) == "\x04\bm\rFoo::Bar"
+
+    def test_load_module(self, space):
+        w_res = space.execute("return Marshal.load('\x04\bm\vKernel')")
+        assert w_res is space.w_kernel
+
+    def test_dump_instance(self, space):
+        #w_res = space.execute("""
+        #class Foo
+        #    def initialize(bar)
+        #        @bar = bar
+        #    end
+        #end
+        #foo = Foo.new(42)
+        #return Marshal.dump(foo)
+        #""")
+        #assert space.str_w(w_res) == "\x04\bo:\bFoo\x06:\t@bari/"
+
+        w_res = space.execute("""
+        class Bar
+            def initialize(a, b)
+                @a, @b = a, b
+            end
+        end
+        b = Bar.new(42, 'Hello')
+        return Marshal.dump(b)
+        """)
+        assert space.str_w(w_res) == "\x04\bo:\bBar\a:\a@ai/:\a@bI\"\nHello\x06:\x06ET"
 
     def test_incompatible_format(self, space):
         with self.raises(

@@ -2,9 +2,12 @@ from __future__ import absolute_import
 from topaz.module import Module, ModuleDef
 from topaz.objects.arrayobject import W_ArrayObject
 from topaz.objects.boolobject import W_TrueObject, W_FalseObject
+from topaz.objects.classobject import W_ClassObject
 from topaz.objects.intobject import W_FixnumObject
 from topaz.objects.hashobject import W_HashObject
+from topaz.objects.moduleobject import W_ModuleObject
 from topaz.objects.nilobject import W_NilObject
+from topaz.objects.objectobject import W_Object
 from topaz.objects.stringobject import W_StringObject
 from topaz.objects.symbolobject import W_SymbolObject
 from topaz.objects.ioobject import W_IOObject
@@ -30,6 +33,9 @@ class Marshal(Module):
     STRING = 0x22
     HASH = 0x7b
     FLOAT = 0x66
+    CLASS = 0x63
+    MODULE = 0x6d
+    OBJECT = 0x6f
 
     @moduledef.setup_module
     def setup_module(space, w_mod):
@@ -79,15 +85,13 @@ class Marshal(Module):
             bytes.append(Marshal.SYMBOL)
             symbol = space.symbol_w(w_obj)
             bytes += Marshal.integer2bytes(len(symbol))
-            for char in symbol:
-                bytes.append(ord(char))
+            bytes += Marshal.string2bytes(symbol)
         elif isinstance(w_obj, W_StringObject):
             string = space.str_w(w_obj)
             bytes.append(Marshal.IVAR)
             bytes.append(Marshal.STRING)
             bytes += Marshal.integer2bytes(len(string))
-            for char in string:
-                bytes.append(ord(char))
+            bytes += Marshal.string2bytes(string)
             bytes.append(0x06)
             # TODO: respect encoding
             bytes += Marshal.dump(space, space.newsymbol("E"))
@@ -98,6 +102,36 @@ class Marshal(Module):
             for w_key in w_obj.contents.keys():
                 bytes += Marshal.dump(space, w_key)
                 bytes += Marshal.dump(space, w_obj.contents[w_key])
+        elif isinstance(w_obj, W_ClassObject):
+            bytes.append(Marshal.CLASS)
+            string = w_obj.name
+            bytes += Marshal.integer2bytes(len(string))
+            bytes += Marshal.string2bytes(string)
+        elif isinstance(w_obj, W_ModuleObject):
+            bytes.append(Marshal.MODULE)
+            string = w_obj.name
+            bytes += Marshal.integer2bytes(len(string))
+            bytes += Marshal.string2bytes(string)
+        elif isinstance(w_obj, W_Object):
+            bytes.append(Marshal.OBJECT)
+            #print w_obj
+            #print space.getclass(w_obj)
+            #w_str = w_obj.method_to_s(space)
+            #print "w_str", space.str_w(w_str)
+            #print w_str.str_storage
+            #print space.str_w(w_obj.method_to_s(space))
+            #print w_obj.method_to_s(space).classdef
+            #print space.getclassfor(w_obj)
+            #print w_obj.method_to_s(space).__class__.__name__
+            w_variables = w_obj.method_instance_variables(space)
+            variables = [space.str_w(w_var) for w_var in space.listview(w_variables)]
+            classname = "Bar"
+            bytes += Marshal.dump(space, space.newsymbol(classname))
+            var_count = len(variables)
+            bytes += Marshal.integer2bytes(var_count)
+            for var in variables:
+                bytes += Marshal.dump(space, space.newsymbol(var))
+                bytes += Marshal.dump(space, w_obj.method_instance_variable_get(space, var))
         else:
             raise NotImplementedError(type(w_obj))
 
@@ -166,6 +200,13 @@ class Marshal(Module):
                 skip += s
                 w_hash.method_subscript_assign(k, v)
             return w_hash, skip
+        elif byte == Marshal.CLASS or byte == Marshal.MODULE:
+            count, skip = Marshal.bytes2integer(bytes, offset + 1)
+            chars = []
+            for i in range(skip, skip + count):
+                chars.append(chr(bytes[offset + i]))
+            string = "".join(chars)
+            return space.find_const(space.w_object, string), count + skip
         else:
             raise NotImplementedError(byte)
 
@@ -286,3 +327,7 @@ class Marshal(Module):
         else:
             raise NotImplementedError("number too small")
         return bytes
+
+    @staticmethod
+    def string2bytes(string):
+        return [ord(char) for char in string]
