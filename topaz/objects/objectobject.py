@@ -3,7 +3,7 @@ import copy
 from rpython.rlib import jit
 from rpython.rlib.objectmodel import compute_unique_id, compute_identity_hash
 
-from topaz.mapdict import MapTransitionCache
+from topaz.mapdict import MapTransitionCache, AttributeNode
 from topaz.module import ClassDef
 from topaz.scope import StaticScope
 
@@ -163,6 +163,16 @@ class W_RootObject(W_BaseObject):
     @classdef.method("hash")
     def method_hash(self, space):
         return space.newint(compute_identity_hash(self))
+
+    @classdef.method("instance_variables")
+    def method_instance_variables(self, space):
+        array = []
+        node = self.map
+        while isinstance(node, AttributeNode):
+            array.append(space.newstr_fromstr(node.name))
+            node = node.prev
+
+        return space.newarray(array[::-1])
 
     @classdef.method("instance_variable_get", name="str")
     def method_instance_variable_get(self, space, name):

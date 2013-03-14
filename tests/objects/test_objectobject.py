@@ -194,6 +194,17 @@ class TestObjectObject(BaseTopazTest):
         """)
         assert self.unwrap(space, w_res) == ["foo", ["bar", 42], None]
 
+    def test_instance_variables(self, space):
+        w_res = space.execute("""
+        class Chris
+          def initialize(a, b)
+            @a, @b = a, b
+          end
+        end
+        return Chris.new(1, 2).instance_variables
+        """)
+        assert self.unwrap(space, w_res) == ["@a", "@b"]
+
     def test_instance_variable_get(self, space):
         w_res = space.execute("""
         class Fred
