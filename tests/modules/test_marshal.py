@@ -367,11 +367,12 @@ class TestMarshal(BaseTopazTest):
         w_res = space.execute("return Marshal.load(Marshal.dump(['foo', 'bar']))")
         assert self.unwrap(space, w_res) == ["foo", "bar"]
 
-    @pytest.mark.xfail
     def test_dump_class(self, space):
         w_res = space.execute("return Marshal.dump(String)")
         assert space.str_w(w_res) == "\x04\bc\vString"
 
+    @pytest.mark.xfail
+    def test_dump_nested_class(self, space):
         w_res = space.execute("return Marshal.dump(Math::DomainError)")
         assert space.str_w(w_res) == "\x04\bc\x16Math::DomainError"
 
@@ -379,11 +380,12 @@ class TestMarshal(BaseTopazTest):
         w_res = space.execute("return Marshal.load('\x04\bc\vString')")
         assert w_res is space.w_string
 
-    @pytest.mark.xfail
     def test_dump_module(self, space):
         w_res = space.execute("return Marshal.dump(Kernel)")
         assert space.str_w(w_res) == "\x04\bm\vKernel"
 
+    @pytest.mark.xfail
+    def test_dump_nested_module(self, space):
         w_res = space.execute("""
         module Foo
             module Bar; end
