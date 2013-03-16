@@ -261,7 +261,10 @@ class W_ModuleObject(W_RootObject):
     @classdef.method("inspect")
     @classdef.method("to_s")
     def method_to_s(self, space):
-        return space.newstr_fromstr(self.name)
+        name = self.name
+        if name is None:
+            return space.newstr_fromstr(space.any_to_s(self))
+        return space.newstr_fromstr(name)
 
     @classdef.method("include")
     def method_include(self, space, w_mod):
@@ -352,10 +355,10 @@ class W_ModuleObject(W_RootObject):
 
     @classdef.method("name")
     def method_name(self, space):
-        if self.name is None:
+        name = self.name
+        if name is None:
             return space.w_nil
-        else:
-            return space.newstr_fromstr(self.name)
+        return space.newstr_fromstr(name)
 
     @classdef.method("private")
     def method_private(self, space, args_w):
@@ -405,8 +408,9 @@ class W_ModuleObject(W_RootObject):
         else:
             w_res = self.find_local_const(space, const)
         if w_res is None:
+            name = space.obj_to_s(self)
             raise space.error(space.w_NameError,
-                "uninitialized constant %s::%s" % (self.name, const)
+                "uninitialized constant %s::%s" % (name, const)
             )
         return w_res
 
@@ -435,8 +439,9 @@ class W_ModuleObject(W_RootObject):
     def method_undef_method(self, space, name):
         w_method = self.find_method(space, name)
         if w_method is None or isinstance(w_method, UndefMethod):
+            cls_name = space.obj_to_s(self)
             raise space.error(space.w_NameError,
-                "undefined method `%s' for class `%s'" % (name, self.name)
+                "undefined method `%s' for class `%s'" % (name, cls_name)
             )
         self.define_method(space, name, UndefMethod(name))
         return self
@@ -445,8 +450,9 @@ class W_ModuleObject(W_RootObject):
     def method_remove_method(self, space, name):
         w_method = self._find_method_pure(space, name, self.version)
         if w_method is None or isinstance(w_method, UndefMethod):
+            cls_name = space.obj_to_s(self)
             raise space.error(space.w_NameError,
-                "method `%s' not defined in %s" % (name, self.name)
+                "method `%s' not defined in %s" % (name, cls_name)
             )
         self.define_method(space, name, UndefMethod(name))
         return self
