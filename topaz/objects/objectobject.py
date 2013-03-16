@@ -173,8 +173,8 @@ class W_RootObject(W_BaseObject):
         while isinstance(node, AttributeNode):
             array.append(space.newstr_fromstr(node.name))
             node = node.prev
-        reversed_array = array.reverse()
-        return space.newarray(reversed_array)
+        array.reverse()
+        return space.newarray(array)
 
     @classdef.method("instance_variable_get", name="str")
     def method_instance_variable_get(self, space, name):

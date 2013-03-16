@@ -49,6 +49,16 @@ class TestClassObject(BaseTopazTest):
         w_res = space.execute("return Class.new.new.instance_variables")
         assert self.unwrap(space, w_res) == []
 
+        w_res = space.execute("""
+        class Foo
+            def initialize(bar, baz)
+                @bar, @baz = bar, baz
+            end
+        end
+        return Foo.new(42, 1337).instance_variables
+        """)
+        assert self.unwrap(space, w_res) == ["@bar", "@baz"]
+
     def test_new(self, space):
         w_res = space.execute("""
         class X

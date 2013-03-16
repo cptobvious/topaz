@@ -397,16 +397,16 @@ class TestMarshal(BaseTopazTest):
         assert w_res is space.w_kernel
 
     def test_dump_instance(self, space):
-        #w_res = space.execute("""
-        #class Foo
-        #    def initialize(bar)
-        #        @bar = bar
-        #    end
-        #end
-        #foo = Foo.new(42)
-        #return Marshal.dump(foo)
-        #""")
-        #assert space.str_w(w_res) == "\x04\bo:\bFoo\x06:\t@bari/"
+        w_res = space.execute("""
+        class Foo
+            def initialize(bar)
+                @bar = bar
+            end
+        end
+        foo = Foo.new(42)
+        return Marshal.dump(foo)
+        """)
+        assert space.str_w(w_res) == "\x04\bo:\bFoo\x06:\t@bari/"
 
         w_res = space.execute("""
         class Bar

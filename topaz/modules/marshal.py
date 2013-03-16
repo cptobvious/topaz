@@ -114,18 +114,10 @@ class Marshal(Module):
             bytes += Marshal.string2bytes(string)
         elif isinstance(w_obj, W_Object):
             bytes.append(Marshal.OBJECT)
-            #print w_obj
-            #print space.getclass(w_obj)
-            #w_str = w_obj.method_to_s(space)
-            #print "w_str", space.str_w(w_str)
-            #print w_str.str_storage
-            #print space.str_w(w_obj.method_to_s(space))
-            #print w_obj.method_to_s(space).classdef
-            #print space.getclassfor(w_obj)
-            #print w_obj.method_to_s(space).__class__.__name__
+            # is there a better way to do this?
+            classname = space.str_w(space.getclass(w_obj).method_to_s(space))
             w_variables = w_obj.method_instance_variables(space)
             variables = [space.str_w(w_var) for w_var in space.listview(w_variables)]
-            classname = "Bar"
             bytes += Marshal.dump(space, space.newsymbol(classname))
             var_count = len(variables)
             bytes += Marshal.integer2bytes(var_count)
